@@ -75,14 +75,14 @@ data class LapData(
     val timestamp: Long,
     val lapHour: Long,
     val lapMinute: Long,
-    val lapSecond: Long
+    val lapSecond: Long,
+    val lapMillis: Long
 )
 
 // Helper Functions
-private fun formatTimestamp(hour: Long, minute: Long, second: Long): String {
-    return String.format("%02d:%02d:%02d", hour, minute, second)
+private fun formatTimestamp(hour: Long, minute: Long, second: Long, millis: Long): String {
+    return String.format("%02d:%02d:%02d.%02d", hour, minute, second, millis/10)
 }
-
 private fun saveLapsToPreferences(context: Context, laps: List<LapData>) {
     val prefs = context.getSharedPreferences("StopwatchPrefs", Context.MODE_PRIVATE)
     val gson = Gson()
@@ -170,7 +170,11 @@ fun ColorThemeSelector(
                                         shape = CircleShape
                                     )
                             )
-                            Text(theme.name.lowercase().capitalize())
+                            // Thêm "Default" cho TEAL
+                            Text(when(theme) {
+                                ColorTheme.TEAL -> "${theme.name.lowercase().capitalize()} (Default)"
+                                else -> theme.name.lowercase().capitalize()
+                            })
                         }
                     },
                     onClick = {
@@ -414,7 +418,8 @@ fun StopwatchScreen() {
                                 timestamp = System.currentTimeMillis(),
                                 lapHour = hours,
                                 lapMinute = minutes,
-                                lapSecond = seconds
+                                lapSecond = seconds,
+                                lapMillis = millis  // Thêm milliseconds
                             )
                         )
                         lastLapTime = milliseconds
@@ -458,7 +463,7 @@ fun StopwatchScreen() {
             }
         }
 
-        // Lap times list
+        // Cập nhật phần hiển thị lap times
         if (laps.isNotEmpty()) {
             Card(
                 modifier = Modifier
@@ -500,7 +505,7 @@ fun StopwatchScreen() {
                                     fontWeight = FontWeight.Bold
                                 )
                                 Text(
-                                    text = formatTimestamp(lap.lapHour, lap.lapMinute, lap.lapSecond),
+                                    text = formatTimestamp(lap.lapHour, lap.lapMinute, lap.lapSecond, lap.lapMillis),
                                     color = textColor
                                 )
                             }
